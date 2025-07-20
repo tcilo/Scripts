@@ -1,0 +1,120 @@
+local player = game.Players.LocalPlayer
+local humanoid
+local screenGui
+local speedBox
+
+local minSpeed = 16
+local maxSpeed = 1000
+
+-- Función para crear GUI y lógica
+local function crearGui()
+    if screenGui then
+        screenGui:Destroy()
+    end
+
+    screenGui = Instance.new("ScreenGui", game.CoreGui)
+    screenGui.Name = "SpeedGUI"
+
+    local frame = Instance.new("Frame", screenGui)
+    frame.Size = UDim2.new(0, 280, 0, 120)
+    frame.Position = UDim2.new(0, 50, 0, 50)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 2
+    frame.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    frame.Active = true
+    frame.Draggable = true
+
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, -40, 0, 30)
+    title.Position = UDim2.new(0, 10, 0, 5)
+    title.Text = "Control de Velocidad"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.BackgroundTransparency = 1
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 18
+    title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local closeBtn = Instance.new("TextButton", frame)
+    closeBtn.Size = UDim2.new(0, 30, 0, 30)
+    closeBtn.Position = UDim2.new(1, -40, 0, 5)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.new(1, 1, 1)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    closeBtn.BorderSizePixel = 2
+    closeBtn.BorderColor3 = Color3.fromRGB(120, 0, 0)
+    closeBtn.Font = Enum.Font.SourceSansBold
+    closeBtn.TextSize = 20
+
+    local speedLabel = Instance.new("TextLabel", frame)
+    speedLabel.Size = UDim2.new(0, 120, 0, 20)
+    speedLabel.Position = UDim2.new(0, 10, 0, 45)
+    speedLabel.Text = "Velocidad:"
+    speedLabel.TextColor3 = Color3.new(1, 1, 1)
+    speedLabel.BackgroundTransparency = 1
+    speedLabel.Font = Enum.Font.SourceSans
+    speedLabel.TextSize = 16
+    speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    speedBox = Instance.new("TextBox", frame)
+    speedBox.Size = UDim2.new(0, 140, 0, 30)
+    speedBox.Position = UDim2.new(0, 120, 0, 40)
+    speedBox.Text = tostring(humanoid and humanoid.WalkSpeed or minSpeed)
+    speedBox.TextColor3 = Color3.new(1, 1, 1)
+    speedBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    speedBox.BorderSizePixel = 2
+    speedBox.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    speedBox.ClearTextOnFocus = false
+    speedBox.Font = Enum.Font.SourceSans
+    speedBox.TextSize = 18
+    speedBox.TextWrapped = false
+    speedBox.TextXAlignment = Enum.TextXAlignment.Center
+
+    local rangeLabel = Instance.new("TextLabel", frame)
+    rangeLabel.Size = UDim2.new(1, -20, 0, 20)
+    rangeLabel.Position = UDim2.new(0, 10, 0, 75)
+    rangeLabel.Text = "Ingrese valor entre " .. minSpeed .. " y " .. maxSpeed
+    rangeLabel.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+    rangeLabel.BackgroundTransparency = 1
+    rangeLabel.Font = Enum.Font.SourceSansItalic
+    rangeLabel.TextSize = 14
+    rangeLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    speedBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed and humanoid then
+            local val = tonumber(speedBox.Text)
+            if val and val >= minSpeed and val <= maxSpeed then
+                humanoid.WalkSpeed = val
+            else
+                speedBox.Text = tostring(humanoid.WalkSpeed)
+            end
+        end
+    end)
+
+    closeBtn.MouseButton1Click:Connect(function()
+        if humanoid then
+            humanoid.WalkSpeed = minSpeed
+        end
+        screenGui:Destroy()
+    end)
+end
+
+local function onCharacterAdded(character)
+    humanoid = character:WaitForChild("Humanoid")
+    -- Asegurar que la velocidad inicial es la mínima
+    humanoid.WalkSpeed = minSpeed
+
+    -- Si la GUI ya está creada, actualizar el texto con la velocidad actual
+    if speedBox then
+        speedBox.Text = tostring(humanoid.WalkSpeed)
+    end
+end
+
+-- Inicializar
+if player.Character then
+    onCharacterAdded(player.Character)
+end
+
+player.CharacterAdded:Connect(onCharacterAdded)
+
+-- Crear la GUI
+crearGui()
